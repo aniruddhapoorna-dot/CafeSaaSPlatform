@@ -1,0 +1,51 @@
+<div class="login-wrapper">
+  <div class="login-card">
+    <div class="header">
+      <h2>Admin Portal</h2>
+      <p>Log in to manage your cafe menu and settings</p>
+    </div>
+
+    <form (ngSubmit)="onLogin()">
+      <div class="form-group">
+        <label>Tenant ID</label>
+        <input 
+          type="text" 
+          [ngModel]="tenantId()" 
+          (ngModelChange)="tenantId.set($event)" 
+          name="tenantId" 
+          placeholder="demo-cafe" 
+          required />
+      </div>
+
+      <div class="form-group">
+        <label>Username</label>
+        <input 
+          type="text" 
+          [ngModel]="username()" 
+          (ngModelChange)="username.set($event)" 
+          name="username" 
+          placeholder="Username" 
+          required />
+      </div>
+
+      <div class="form-group">
+        <label>Password</label>
+        <input 
+          type="password" 
+          [ngModel]="password()" 
+          (ngModelChange)="password.set($event)" 
+          name="password" 
+          placeholder="Password" 
+          required />
+      </div>
+
+      <div *ngIf="errorMessage()" class="error-banner">
+        {{ errorMessage() }}
+      </div>
+
+      <button type="submit" class="submit-btn" [disabled]="isLoading()">
+        {{ isLoading() ? 'Logging in...' : 'Sign In' }}
+      </button>
+    </form>
+  </div>
+</div>

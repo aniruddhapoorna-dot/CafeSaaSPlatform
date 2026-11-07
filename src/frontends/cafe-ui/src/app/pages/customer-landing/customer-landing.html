@@ -1,0 +1,50 @@
+<div class="cafe-container">
+  <!-- Top Cafe & Table Banner -->
+  <header class="cafe-header">
+    <div class="cafe-badge">
+      <span class="tenant-tag">{{ tenantId() | uppercase }}</span>
+      <span class="table-tag">Table #{{ tableId() }}</span>
+    </div>
+    <h1>Welcome & Order</h1>
+    <p class="subtitle">Select your items and order straight to your table.</p>
+  </header>
+
+  <!-- Menu Section -->
+  <main class="menu-section">
+    <h2>Menu</h2>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading()" class="status-msg">
+      <p>Loading menu items...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="errorMessage() && !isLoading()" class="error-msg">
+      <p>{{ errorMessage() }}</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading() && !errorMessage() && menuItems().length === 0" class="status-msg">
+      <p>No menu items available at the moment.</p>
+    </div>
+
+    <!-- Items Grid -->
+    <div class="menu-grid" *ngIf="!isLoading() && menuItems().length > 0">
+      <div class="menu-card" *ngFor="let item of menuItems()">
+        <div class="menu-details">
+          <span class="category-pill">{{ item.category }}</span>
+          <h3>{{ item.name }}</h3>
+          <p>{{ item.description }}</p>
+          <span class="price">₹{{ item.price }}</span>
+        </div>
+        <button class="add-btn" (click)="addToCart(item)">+ Add</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Sticky Bottom Cart Indicator -->
+  <footer class="cart-bar" *ngIf="cartCount() > 0">
+    <span>🛒 {{ cartCount() }} item(s) selected</span>
+    <button class="view-cart-btn">View Cart</button>
+  </footer>
+</div>
