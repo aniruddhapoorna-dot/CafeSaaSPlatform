@@ -1,6 +1,7 @@
 ﻿using CafeOrderSystem.Interfaces;
 using CafeOrderSystem.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CafeOrderSystem.Controllers
 {
@@ -18,6 +19,7 @@ namespace CafeOrderSystem.Controllers
 
         // 1. GET: api/menu (For Customers and Owners)
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<MenuItem>>> GetMenu()
         {
             var items = await _repository.GetAllItemsAsync();
@@ -26,6 +28,7 @@ namespace CafeOrderSystem.Controllers
 
         // 2. POST: api/menu (For the Owner to add a new dish)
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<MenuItem>> AddDish(MenuItem item)
         {
             await _repository.AddAsync(item);
@@ -34,10 +37,12 @@ namespace CafeOrderSystem.Controllers
 
         // 3. DELETE: api/menu/5 (For the Owner to remove a dish)
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteDish(int id)
         {
             await _repository.DeleteAsync(id);
             return NoContent();
         }
+
     }
 }
