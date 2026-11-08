@@ -1,4 +1,3 @@
-using System.Text;
 using CafeOrderSystem.Data;
 using CafeOrderSystem.Interfaces;
 using CafeOrderSystem.Repositories;
@@ -6,6 +5,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Security.Cryptography;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,32 @@ builder.Services.AddCors(options =>
 
 // 2. JWT Authentication Setup
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+const int MinJwtKeyBytes = 32; // HS256 wants at least 256 bits
+var usedEphemeralKey = false;
+
+var jwtKey = builder.Configuration["JwtSettings:Key"];
+
+if (string.IsNullOrWhiteSpace(jwtKey))
+{
+    if (!builder.Environment.IsDevelopment())
+    {
+        throw new InvalidOperationException(
+            "JwtSettings:Key is not configured. Set the environment variable " +
+            "JwtSettings__Key (or user-secrets locally) to a random value of at least 32 bytes.");
+    }
+
+    // Development only: throwaway key, new on every start.
+    jwtKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
+    builder.Configuration["JwtSettings:Key"] = jwtKey;
+    usedEphemeralKey = true;
+}
+else if (Encoding.UTF8.GetBytes(jwtKey).Length < MinJwtKeyBytes)
+{
+    throw new InvalidOperationException(
+        $"JwtSettings:Key is too short ({Encoding.UTF8.GetBytes(jwtKey).Length} bytes). " +
+        $"It must be at least {MinJwtKeyBytes} bytes.");
+}
+
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
 
 builder.Services.AddAuthentication(options =>
@@ -85,6 +112,12 @@ builder.Services.AddDbContext<CafeDbContext>(options =>
 builder.Services.AddScoped<IMenuRepository, MenuRepository>();
 
 var app = builder.Build();
+if (usedEphemeralKey)
+{
+    app.Logger.LogWarning(
+        "JwtSettings:Key was not configured. Using a temporary key for this run; " +
+        "tokens will stop working when the app restarts.");
+}
 
 // 5. Seed / Ensure DB Created
 using (var scope = app.Services.CreateScope())

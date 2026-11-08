@@ -20,21 +20,8 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public IActionResult Login([FromBody] LoginRequest request)
     {
-        // Simple credential validation (you can swap with DB lookup later)
-        // Hardcoded for demo/admin: admin / admin123
-        if (request.Username == "admin" && request.Password == "admin123")
-        {
-            var token = GenerateJwtToken(request.Username, request.TenantId ?? "demo-cafe", "Admin");
-            return Ok(new LoginResponse
-            {
-                Token = token,
-                Username = request.Username,
-                TenantId = request.TenantId ?? "demo-cafe",
-                Role = "Admin"
-            });
-        }
 
-        return Unauthorized(new { message = "Invalid username or password" });
+        return NotFound();
     }
 
     private string GenerateJwtToken(string username, string tenantId, string role)
